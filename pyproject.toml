@@ -1,0 +1,16 @@
+[project]
+name = "zeste_vision"
+version = "0.1.0"
+dependencies = [
+    "numpy",
+    "pytorch"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
