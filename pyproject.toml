@@ -3,7 +3,10 @@ name = "zeste_vision"
 version = "0.1.0"
 dependencies = [
     "numpy",
-    "pytorch"
+    "torch",
+    "torchvision",
+    "torchaudio",
+    "mediapipe",
 ]
 
 [tool.setuptools]
