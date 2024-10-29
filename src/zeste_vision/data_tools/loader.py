@@ -1,5 +1,6 @@
 import os
 import cv2
+import pickle
 
 def _get_test_video_path():
     try:
@@ -41,3 +42,18 @@ def get_test_video_frame(video_file: str = None, frame_i: int = 0):
         if not ret:
             break
     return frame
+
+def load_keypoint3d(file_path, use_optim=False):
+    """
+    Load a 3D keypoint sequence represented using COCO format.
+    
+    Copied + modded on 2024-10-28 from:
+    https://github.com/google/aistplusplus_api/blob/main/aist_plusplus/loader.py
+    """
+    assert os.path.exists(file_path), f'File {file_path} does not exist!'
+    with open(file_path, 'rb') as f:
+      data = pickle.load(f)
+    if use_optim:
+      return data['keypoints3d_optim']  # (N, 17, 3)
+    else:
+      return data['keypoints3d']  # (N, 17, 3)
