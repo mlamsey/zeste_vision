@@ -4,7 +4,7 @@ import pickle
 
 def _get_test_video_path():
     try:
-        data_dir = "/data/aist_dance"
+        data_dir = "/data/aist_dance/test"
         files = os.listdir(data_dir)
         files = [f for f in files if f.endswith(".mp4")]
         files.sort()
