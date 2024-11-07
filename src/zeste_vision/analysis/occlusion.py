@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from zeste_vision.data_tools.loader import get_test_video_frames
 from zeste_vision.analysis.pose_tools import add_occlusion, crop_image, compute_bounding_box, count_visible_joints
-from zeste_vision.utils import mpjpe
+from zeste_vision.utils import mpjpe, get_pose_np
 
 DRAWING = mp.solutions.drawing_utils
 POSE_CONNECTIONS = mp.solutions.pose.POSE_CONNECTIONS
@@ -29,12 +29,6 @@ def add_occlusion_to_frame(frame, results, occlusion_pct: float=0.5):
     mask = results.segmentation_mask.astype(np.uint8)
     bbox = cv2.boundingRect(mask)
     return add_occlusion(frame, bbox, occlusion_pct)
-
-def get_pose_np(pose_landmarks):
-    if pose_landmarks is None:
-        return None
-    
-    return np.array([[lm.x, lm.y, lm.z] for lm in pose_landmarks.landmark])
 
 def evaluate_occlusion(pose_estimator: None, dump_results:bool=True):
     test_frames = get_test_video_frames()

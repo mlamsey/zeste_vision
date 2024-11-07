@@ -3,17 +3,24 @@ from enum import Enum
 import os
 
 class ARMS(Enum):
+    __order__ = "ZST1XX ZST2XX ZST3XX"
     ZST1XX = 1
     ZST2XX = 2
     ZST3XX = 3
 
 class EXERCISES(Enum):
+    __order__ = "SEATED_REACH_FORWARD SEATED_FORWARD_KICK SEATED_CALF_RAISE STANDING_REACH_ACROSS STANDING_WINDMILL STANDING_HIGH_KNEE"
     SEATED_REACH_FORWARD = 1
     SEATED_FORWARD_KICK = 2
     SEATED_CALF_RAISE = 3
     STANDING_REACH_ACROSS = 4
     STANDING_WINDMILL = 5
     STANDING_HIGH_KNEE = 6
+
+class USER_RANGES:
+    ZST1XX = [i for i in range(1, 12)]
+    ZST2XX = [i for i in range(1, 11)]
+    ZST3XX = [i for i in range(1, 22)]
 
 VIDEO_NAME_MAP = {
     EXERCISES.SEATED_REACH_FORWARD: "seated_reach_forward_low",
