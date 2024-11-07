@@ -31,3 +31,8 @@ def crop_image(image, bounding_box, percent_bbox: float=0.2):
     cropped_image = image.copy()
     cropped_image[bbox_top:, :] = 0
     return cropped_image
+
+def count_visible_joints(results):
+    if results.pose_landmarks is None:
+        return 0
+    return sum([lm.visibility > 0.8 for lm in results.pose_landmarks.landmark])
