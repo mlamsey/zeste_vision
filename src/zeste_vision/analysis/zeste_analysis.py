@@ -25,7 +25,7 @@ MEDIAPIPE_OPTIONS = {
 
 def estimate_pose_frame(frame, pose_estimator) -> np.ndarray:
     result = pose_estimator.process(frame)
-    return result, get_pose_np(result.pose_landmarks)
+    return get_pose_np(result.pose_landmarks), get_pose_np(result.pose_world_landmarks)
 
 def _get_users(arm):
     if arm == ARMS.ZST1XX:
@@ -57,11 +57,11 @@ def analyze(arm: ARMS, save_json: bool=True, save_pickle: bool=False):
                 print(f"\tSet {i}")
                 poses = []
                 for frame in tqdm(frame_set):
-                    result, pose = estimate_pose_frame(frame, pose_estimator=pose_estimator)
-                    if pose is not None:
-                        pose = pose.tolist()
+                    pose_norm, pose_world = estimate_pose_frame(frame, pose_estimator=pose_estimator)
+                    if pose_world is not None:
+                        pose_world = pose_world.tolist()
                         
-                    poses.append(pose)
+                    poses.append(pose_world)
                 exercise_memory[f"set{i}"] = poses
             
             pose_memory[exercise] = exercise_memory
@@ -70,13 +70,11 @@ def analyze(arm: ARMS, save_json: bool=True, save_pickle: bool=False):
         pose_memory_dump = {key.name: value for key, value in pose_memory.items()}
         if save_json:
             json.dump(pose_memory_dump, open(file_name, "w"))
-        if save_pickle:
-            pkl.dump(result, open(file_name.replace(".json", ".pkl"), "wb"))
-
+        
 def main(args):
     if args.all:
         for arm in ARMS:
-            analyze(arm, save_json=False, save_pickle=True)
+            analyze(arm, save_json=True, save_pickle=False)
         return
     
     elif args.arm:
