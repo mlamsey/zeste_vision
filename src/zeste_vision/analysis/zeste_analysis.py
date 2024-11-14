@@ -76,10 +76,11 @@ def analyze(arm: ARMS, save_json: bool=True, save_pickle: bool=False):
 def main(args):
     if args.all:
         for arm in ARMS:
-            analyze(arm)
+            analyze(arm, save_json=False, save_pickle=True)
         return
     
-    analyze(ARMS(args.arm), save_json=False, save_pickle=True)
+    elif args.arm:
+        analyze(ARMS(args.arm), save_json=False, save_pickle=True)
 
 if __name__ == '__main__':
     import argparse
