@@ -51,7 +51,7 @@ def analyze(arm: ARMS, save_json: bool=True, save_pickle: bool=False):
             print(f"Exercise {exercise.name}")
             frames = load_exercise(arm=arm, exercise=exercise, user=user)
 
-            exercise_memory = {f"set{i}": [] for i in range(4)}
+            exercise_memory = {f"set{i}": [] for i in range(6)}
 
             for i, frame_set in enumerate(frames):
                 print(f"\tSet {i}")
@@ -74,7 +74,7 @@ def analyze(arm: ARMS, save_json: bool=True, save_pickle: bool=False):
 def main(args):
     if args.all:
         for arm in ARMS:
-            analyze(arm, save_json=True, save_pickle=False)
+            analyze(arm)
         return
     
     elif args.arm:
