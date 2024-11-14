@@ -189,6 +189,7 @@ def test(frame_i: int = 10, use_cv: bool = True):
 
     # run pose estimator on test frame
     results = pose.process(test_frame)
+    bbox = compute_bounding_box(results)
     print("occlusion_analysis::test: pose estimation complete")
 
     render_image = test_frame.copy()
@@ -201,6 +202,18 @@ def test(frame_i: int = 10, use_cv: bool = True):
         rgb_frame = cv2.cvtColor(render_image, cv2.COLOR_BGR2RGB)
         plt.imshow(rgb_frame)
         plt.show()
+
+    # occlusion
+    occluded_image = test_frame.copy()
+    occluded_image = add_occlusion(occluded_image, bbox, percent=0.5)
+
+    occluded_results = pose.process(occluded_image)
+
+    occluded_render_image = occluded_image.copy()
+    DRAWING.draw_landmarks(occluded_render_image, occluded_results.pose_landmarks, POSE_CONNECTIONS)
+
+    cv2.imshow("Occluded Estimate", occluded_render_image)
+    cv2.waitKey(0)
 
 def main(args):
     if args.test:

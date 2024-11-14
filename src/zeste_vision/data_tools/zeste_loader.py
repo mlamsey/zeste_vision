@@ -36,19 +36,22 @@ ROOT_1XX = os.path.join(ROOT, "zst1xx")
 ROOT_2XX = os.path.join(ROOT, "zst2xx")
 ROOT_3XX = os.path.join(ROOT, "zst3xx")
 
-_files_1xx = os.listdir(ROOT_1XX)
-_files_2xx = os.listdir(ROOT_2XX)
-_files_3xx = os.listdir(ROOT_3XX)
+try:
+    _files_1xx = os.listdir(ROOT_1XX)
+    _files_2xx = os.listdir(ROOT_2XX)
+    _files_3xx = os.listdir(ROOT_3XX)
 
-_files_1xx.sort()
-_files_2xx.sort()
-_files_3xx.sort()
+    _files_1xx.sort()
+    _files_2xx.sort()
+    _files_3xx.sort()
 
-ZST1XX = [os.path.join(ROOT_1XX, user) for user in _files_1xx if user.startswith("zst1") and len(user) == 6]
-ZST2XX = [os.path.join(ROOT_2XX, user) for user in _files_2xx if user.startswith("zst2") and len(user) == 6]
-ZST3XX = [os.path.join(ROOT_3XX, user) for user in _files_3xx if user.startswith("zst3") and len(user) == 6]
+    ZST1XX = [os.path.join(ROOT_1XX, user) for user in _files_1xx if user.startswith("zst1") and len(user) == 6]
+    ZST2XX = [os.path.join(ROOT_2XX, user) for user in _files_2xx if user.startswith("zst2") and len(user) == 6]
+    ZST3XX = [os.path.join(ROOT_3XX, user) for user in _files_3xx if user.startswith("zst3") and len(user) == 6]
 
-ZSTALL = ZST1XX + ZST2XX + ZST3XX
+    ZSTALL = ZST1XX + ZST2XX + ZST3XX
+except Exception as e:
+    pass
 
 def check_videos_present():
     for user in ZSTALL:

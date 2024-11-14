@@ -4,6 +4,7 @@ import numpy as np
 
 import json
 from tqdm import tqdm
+import pickle as pkl
 
 from zeste_vision.data_tools.zeste_loader import *
 from zeste_vision.utils import mpjpe, get_pose_np
@@ -24,7 +25,7 @@ MEDIAPIPE_OPTIONS = {
 
 def estimate_pose_frame(frame, pose_estimator) -> np.ndarray:
     result = pose_estimator.process(frame)
-    return get_pose_np(result.pose_landmarks)
+    return result, get_pose_np(result.pose_landmarks)
 
 def _get_users(arm):
     if arm == ARMS.ZST1XX:
@@ -36,7 +37,7 @@ def _get_users(arm):
     else:
         return []
     
-def analyze(arm: ARMS):
+def analyze(arm: ARMS, save_json: bool=True, save_pickle: bool=False):
     pose_estimator = mp.solutions.pose.Pose(**MEDIAPIPE_OPTIONS)
     users = _get_users(arm)
 
@@ -56,7 +57,7 @@ def analyze(arm: ARMS):
                 print(f"\tSet {i}")
                 poses = []
                 for frame in tqdm(frame_set):
-                    pose = estimate_pose_frame(frame, pose_estimator=pose_estimator)
+                    result, pose = estimate_pose_frame(frame, pose_estimator=pose_estimator)
                     if pose is not None:
                         pose = pose.tolist()
                         
@@ -67,7 +68,10 @@ def analyze(arm: ARMS):
 
         file_name = f"zst{arm.value}{user:02d}.json"
         pose_memory_dump = {key.name: value for key, value in pose_memory.items()}
-        json.dump(pose_memory_dump, open(file_name, "w"))
+        if save_json:
+            json.dump(pose_memory_dump, open(file_name, "w"))
+        if save_pickle:
+            pkl.dump(result, open(file_name.replace(".json", ".pkl"), "wb"))
 
 def main(args):
     if args.all:
@@ -75,7 +79,7 @@ def main(args):
             analyze(arm)
         return
     
-    analyze(ARMS(args.arm))
+    analyze(ARMS(args.arm), save_json=False, save_pickle=True)
 
 if __name__ == '__main__':
     import argparse
