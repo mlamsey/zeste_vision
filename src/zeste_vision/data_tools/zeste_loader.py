@@ -22,6 +22,26 @@ class USER_RANGES:
     ZST2XX = [i for i in range(1, 11)]
     ZST3XX = [i for i in range(1, 22)]
 
+    def get_range(arm: ARMS):
+        if arm == ARMS.ZST1XX:
+            return USER_RANGES.ZST1XX
+        elif arm == ARMS.ZST2XX:
+            return USER_RANGES.ZST2XX
+        elif arm == ARMS.ZST3XX:
+            return USER_RANGES.ZST3XX
+        else:
+            return []
+        
+    def get_range_filenames(arm: ARMS):
+        if arm == ARMS.ZST1XX:
+            return [f"zst1{user:02d}" for user in USER_RANGES.ZST1XX]
+        elif arm == ARMS.ZST2XX:
+            return [f"zst2{user:02d}" for user in USER_RANGES.ZST2XX]
+        elif arm == ARMS.ZST3XX:
+            return [f"zst3{user:02d}" for user in USER_RANGES.ZST3XX]
+        else:
+            return []
+
 VIDEO_NAME_MAP = {
     EXERCISES.SEATED_REACH_FORWARD: "seated_reach_forward_low",
     EXERCISES.SEATED_FORWARD_KICK: "seated_forward_kick",
