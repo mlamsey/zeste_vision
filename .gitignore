@@ -1,1 +1,7 @@
 src/zeste_vision.egg-info/
+__pycache__/
+
+*.zip
+*.pkl
+*.mp4
+*.csv

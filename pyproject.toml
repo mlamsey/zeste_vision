@@ -2,6 +2,7 @@
 name = "zeste_vision"
 version = "0.1.0"
 dependencies = [
+    "ipykernel",
     "numpy",
     "torch",
     "torchvision",
