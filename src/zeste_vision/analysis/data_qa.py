@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import torch
 import json
 from zeste_vision.data_tools.zeste_loader import EXERCISES, USER_RANGES, ARMS
 
@@ -77,7 +78,23 @@ class Set:
         self.poses = [np.array([])]
 
     def set_poses(self, poses: list):
-        self.poses = [np.array(p) for p in poses]
+        # self.poses = [np.array(p) for p in poses]
+        poses = [p for p in poses if p is not None]
+        self.poses = np.array(poses)
+
+    def get_poses_torch(self, bool_unsqueeze=True):
+        """
+        Returns poses as a torch tensor.
+
+        Args:
+            bool_unsqueeze (bool): If True, unsqueeze the tensor to add a batch dimension.
+        """
+        poses_torch = torch.tensor(self.poses)
+
+        if bool_unsqueeze:
+            poses_torch = poses_torch.unsqueeze(0)
+
+        return poses_torch
 
 #####
 def get_sets_per_exercise(args):
