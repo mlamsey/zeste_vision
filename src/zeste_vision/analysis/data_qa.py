@@ -37,6 +37,19 @@ class User:
         except Exception as e:
             print(f"Error loading user {user_id} data: {e}")
 
+    def get_exercise_pose_dict(self):
+        exercise_pose_dict = {}
+        for exercise in EXERCISES:
+            ex_name = exercise.name
+            ex_var = ex_name.lower().replace(" ", "_")
+            exercise = getattr(self, ex_var)
+            if exercise is not None:
+                exercise_pose_dict[ex_name] = exercise.sets
+            else:
+                exercise_pose_dict[ex_name] = []
+
+        return exercise_pose_dict
+
     def get_sets_per_exercise(self):
         sets_per_exercise = {}
         for exercise in EXERCISES:
@@ -82,6 +95,9 @@ class Set:
         poses = [p for p in poses if p is not None]
         self.poses = np.array(poses)
 
+    def get_poses(self):
+        return self.poses
+
     def get_poses_torch(self, bool_unsqueeze=True):
         """
         Returns poses as a torch tensor.
@@ -106,7 +122,25 @@ def get_sets_per_exercise(args):
             user_obj = User()
             user_file = os.path.join(data_dir, f"{user}.json")
             user_obj.load_json(user_file)
-            user_obj.print_erroneous_sets_per_exercise()
+
+def get_set_frame_lengths(args):
+    data_dir = args.data_dir
+
+    for arm in ARMS:
+        user_range = USER_RANGES.get_range_filenames(arm)
+        for user in user_range:
+            user_obj = User()
+            user_file = os.path.join(data_dir, f"{user}.json")
+            user_obj.load_json(user_file)
+            pose_dict = user_obj.get_exercise_pose_dict()
+            for ex_name, poses in pose_dict.items():
+                frames = [len(ex_set.get_poses()) for ex_set in poses]
+                cutoff = 250
+                frames = [f for f in frames if f > cutoff]
+                if len(frames) != 4:
+                    print(f"{user}: {ex_name}, {len(frames)}")
+                # print(f"{user}: {ex_name}, {len(frames)}")
+                # print(f"{user}: {key}, {len(value)}")
             print()
 
 if __name__ == "__main__":
@@ -116,4 +150,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    get_sets_per_exercise(args)
+    # get_sets_per_exercise(args)
+    get_set_frame_lengths(args)
