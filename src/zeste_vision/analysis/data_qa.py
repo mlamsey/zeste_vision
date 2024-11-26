@@ -126,7 +126,8 @@ def get_sets_per_exercise(args):
 def get_set_frame_lengths(args):
     data_dir = args.data_dir
 
-    for arm in ARMS:
+    # for arm in ARMS:
+    for arm in [ARMS.ZST1XX, ARMS.ZST3XX]:
         user_range = USER_RANGES.get_range_filenames(arm)
         for user in user_range:
             user_obj = User()
@@ -135,7 +136,7 @@ def get_set_frame_lengths(args):
             pose_dict = user_obj.get_exercise_pose_dict()
             for ex_name, poses in pose_dict.items():
                 frames = [len(ex_set.get_poses()) for ex_set in poses]
-                cutoff = 250
+                cutoff = 275
                 frames = [f for f in frames if f > cutoff]
                 if len(frames) != 4:
                     print(f"{user}: {ex_name}, {len(frames)}")

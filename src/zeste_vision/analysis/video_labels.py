@@ -6,12 +6,51 @@ import json
 
 from zeste_vision.data_tools.zeste_loader import EXERCISES, USER_RANGES, ARMS
 
+ERROR_KEYS = {
+    EXERCISES.SEATED_REACH_FORWARD: "Did not sit all the way back up (shoulders over hips)",
+    EXERCISES.SEATED_FORWARD_KICK: "Didn't swing leg back down",
+    EXERCISES.SEATED_CALF_RAISE: "Did not lower heel back to floor",
+    EXERCISES.STANDING_REACH_ACROSS: "Didn't return to a neutral pose (shoulders squared forwards)",
+    EXERCISES.STANDING_WINDMILL: "Didn't stand all the way back up (shoulders over hips)",
+    EXERCISES.STANDING_HIGH_KNEE: "Did not step all the way back to the ground (any part of foot)",
+}
+
+IMPORTANT_COLS = [
+    "Participant ID",
+    "Evaluator Name",
+]
+
 def load_data(file_path: str) -> pd.DataFrame:
-    df = pd.read_csv(file_path, header=1)
+    df = pd.read_csv(file_path, header=1) if file_path.endswith(".csv") else pd.read_excel(file_path, header=1)
     df = df[df["Evaluator Name"].str.contains("Josh") | df["Evaluator Name"].str.contains("Rachel")]
+    df = df[df["Finished"] == "TRUE"] if file_path.endswith(".csv") else df[df["Finished"] == True]
     return df
 
-def get_set_cols(df: pd.DataFrame) -> dict:
+def main_df_processing(df: pd.DataFrame) -> pd.DataFrame:
+    # df = df[df["Finished"] == "TRUE"]
+    df = get_josh_rachel_df(df)
+    df = get_set_cols_df(df)
+    return df
+
+def get_josh_rachel_df(df: pd.DataFrame) -> pd.DataFrame:
+    return df[df["Evaluator Name"].str.contains("Josh") | df["Evaluator Name"].str.contains("Rachel")]
+
+def get_set_cols_df(df: pd.DataFrame) -> dict:
+    cols = get_set_cols_err_type(df)
+    return df[cols]
+
+def get_set_cols_err_type(df: pd.DataFrame) -> dict:
+    col_str = "please indicate how the subject deviated"
+    not_incl_str = "(please specify)"
+    cols = df.columns[df.columns.str.contains(col_str)]
+    cols = cols[~cols.str.contains(not_incl_str)]
+    cols = cols[~cols.str.endswith(".1")]
+    # cast to list
+    cols = cols.tolist()
+    cols += IMPORTANT_COLS
+    return cols
+
+def get_set_cols_bool(df: pd.DataFrame) -> dict:
     sets = ["1", "2", "3", "4"]
     exercises = [
         "Seated Reach Forward Low",
@@ -61,7 +100,7 @@ def get_labels_ex_set(df: pd.DataFrame, ex_set_dict: dict) -> dict:
 
 ###
 def _count_yes_no(df: pd.DataFrame, feedback: str) -> dict:
-    set_cols = get_set_cols(df)
+    set_cols = get_set_cols_bool(df)
     users = USER_RANGES.get_range_filenames(ARMS.ZST1XX) + USER_RANGES.get_range_filenames(ARMS.ZST3XX)
     users = [u.upper() for u in users]
 
@@ -106,14 +145,83 @@ def visualize_proportions_of_yes_no(df: pd.DataFrame):
     plt.show()
 
 ###
-def test_get_set_cols(args):
+def get_labels(df: pd.DataFrame, outfile: str = "labels2.csv"):
+    df = main_df_processing(df)
+    participants = df["Participant ID"].unique()
+    # labels = {participant: {} for participant in df["Participant ID"].unique()}
+    with open(outfile, "w") as f:
+        header = "Participant ID,Exercise,Set,Error\n"
+        f.write(header)
+        for ex in EXERCISES:
+            ex_str = EXERCISES.to_str(ex)
+            ex_write = ex_str.replace(" ", "_")
+            ex_write = ex_write.lower()
+            ex_cols = df.columns[df.columns.str.contains(ex_str)]
+            # add important cols
+            ex_cols = ex_cols.tolist()
+            ex_cols += IMPORTANT_COLS
+            ex_df = df[ex_cols]
+            
+            # get ids where error contains error key
+            error_key = ERROR_KEYS[ex]
+
+            for participant in participants:
+                participant_df = ex_df[ex_df["Participant ID"] == participant]
+                ratings_per_evaluator = []
+                for i, col in enumerate(ex_cols):
+                    if col in IMPORTANT_COLS:
+                        continue
+
+                    entry = participant_df[col]
+                    ratings = entry.values
+                    truth_table = [False, False]
+                    for j, rating in enumerate(ratings):
+                        if isinstance(rating, str) and error_key in rating:
+                            truth_table[j] = True
+
+                    # OR rating
+                    set_rating = any(truth_table)
+
+                    f.write(f"{participant},{ex_write},{i + 1},{set_rating}\n")
+            
+            # rows
+            # print(ex_str)
+            # for _, row in ex_df.iterrows():
+            #     print(row["Evaluator Name"])
+            #     for i, col in enumerate(ex_cols):
+            #         entry = row[col]
+            #         user_id = row["Participant ID"].lower()
+            #         ex_id = ex_str.lower()
+            #         ex_id = ex_str.replace(" ", "_")
+            #         if isinstance(entry, str) and error_key in entry:
+            #             error = True
+            #         else:
+            #             error = False
+
+                    # f.write(f"{user_id},{ex_id},{i + 1},{error}\n")
+
+###
+def test_get_set_cols_bool(args):
     df = load_data(args.file)
-    set_cols = get_set_cols(df)
+    set_cols = get_set_cols_bool(df)
     print(set_cols)
+
+def test_get_set_cols_err_type(args):
+    df = load_data(args.file)
+    set_cols = get_set_cols_err_type(df)
+    df_set = df[set_cols]
+    
+    # print(set_cols)
+    # print(len(set_cols))
+
+def test_df_main(args):
+    df = load_data(args.file)
+    df = main_df_processing(df)
+    print(df.shape)
 
 def test_get_labels_ex_set(args):
     df = load_data(args.file)
-    set_cols = get_set_cols(df)
+    set_cols = get_set_cols_bool(df)
     
     for user in ["ZST105"]:
         print(user)
@@ -131,12 +239,18 @@ def test_visualize_proportions_of_yes_no(args):
 def main(args):
     if args.test:
         # test_get_labels_ex_set(args)
-        test_visualize_proportions_of_yes_no(args)
+        # test_visualize_proportions_of_yes_no(args)
+        # test_get_set_cols_err_type(args)
+        test_df_main(args)
+    elif args.labels:
+        df = load_data(args.file)
+        get_labels(df)
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--test", action="store_true")
+    parser.add_argument("--labels", action="store_true")
     parser.add_argument("--file", type=str)
 
     args = parser.parse_args()

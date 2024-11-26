@@ -17,10 +17,26 @@ class EXERCISES(Enum):
     STANDING_WINDMILL = 5
     STANDING_HIGH_KNEE = 6
 
+    def to_str(exercise):
+        if exercise == EXERCISES.SEATED_REACH_FORWARD:
+            return "Seated Reach Forward Low"
+        elif exercise == EXERCISES.SEATED_FORWARD_KICK:
+            return "Seated Forward Kick"
+        elif exercise == EXERCISES.SEATED_CALF_RAISE:
+            return "Seated Calf Raises"
+        elif exercise == EXERCISES.STANDING_REACH_ACROSS:
+            return "Standing Reach Across"
+        elif exercise == EXERCISES.STANDING_WINDMILL:
+            return "Standing Windmills"
+        elif exercise == EXERCISES.STANDING_HIGH_KNEE:
+            return "Standing High Knees"
+        else:
+            return ""
+
 class USER_RANGES:
     ZST1XX = [i for i in range(1, 12)]
     ZST2XX = [i for i in range(1, 11)]
-    ZST3XX = [i for i in range(1, 22)]
+    ZST3XX = [i for i in range(1, 23)]
 
     def get_range(arm: ARMS):
         if arm == ARMS.ZST1XX:
