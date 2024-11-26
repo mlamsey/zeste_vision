@@ -200,6 +200,9 @@ def get_labels(df: pd.DataFrame, outfile: str = "labels2.csv"):
 
                     # f.write(f"{user_id},{ex_id},{i + 1},{error}\n")
 
+def train_eval_split_labels():
+    pass
+
 ###
 def test_get_set_cols_bool(args):
     df = load_data(args.file)
