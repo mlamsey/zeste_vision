@@ -224,47 +224,48 @@ def train_eval_split_labels(parent_labels: str, top_dir: str):
     train_dir = os.path.join(top_dir, "train")
     eval_dir = os.path.join(top_dir, "eval")
 
-    new_df = pd.DataFrame(columns=["File Path", "Error"])
+    for arm in [train_dir, eval_dir]:
+        new_df = pd.DataFrame(columns=["File Path", "Error"])
+        
+        participants = os.listdir(arm)
+        participants = [p for p in participants if "zst" in p]
+        participants.sort()
 
-    # train labels
-    train_participants = os.listdir(train_dir)
-    train_participants = [p for p in train_participants if "zst" in p]
-    train_participants.sort()
+        for p in participants:
+            participant_dir = os.path.join(arm, p)
+            videos = os.listdir(participant_dir)
+            videos = [v for v in videos if v.endswith(".mp4")]
+            videos.sort()
 
-    for p in train_participants:
-        participant_dir = os.path.join(train_dir, p)
-        videos = os.listdir(participant_dir)
-        videos = [v for v in videos if v.endswith(".mp4")]
-        videos.sort()
+            for exercise in ["seated_reach_forward_low", "seated_forward_kick", "seated_calf_raises", "standing_reach_across", "standing_windmills", "standing_high_knees"]:
+                exercise_videos = [v for v in videos if exercise in v]
+                labels = df[(df["Participant ID"] == p.upper()) & (df["Exercise"] == exercise)]
 
-        for exercise in ["seated_reach_forward_low", "seated_forward_kick", "seated_calf_raises", "standing_reach_across", "standing_windmills", "standing_high_knees"]:
-            exercise_videos = [v for v in videos if exercise in v]
-            labels = df[(df["Participant ID"] == p.upper()) & (df["Exercise"] == exercise)]
+                headers = [v[:video_header_len] for v in exercise_videos]
+                unique_headers = list(set(headers))
+                unique_headers.sort()
 
-            headers = [v[:video_header_len] for v in exercise_videos]
-            unique_headers = list(set(headers))
-            unique_headers.sort()
+                for i, header in enumerate(unique_headers):
+                    set_videos = [v for v in exercise_videos if v.startswith(header)]
+                    set_videos.sort()
+                    for v in set_videos:
+                        try:
+                            file_path = os.path.join(participant_dir, v)
+                            error = labels["Error"].values[i]
 
-            for i, header in enumerate(unique_headers):
-                set_videos = [v for v in exercise_videos if v.startswith(header)]
-                set_videos.sort()
-                for v in set_videos:
-                    try:
-                        file_path = os.path.join(participant_dir, v)
-                        error = labels["Error"].values[i]
+                            # print(f"{file_path}: {error}")
 
-                        # print(f"{file_path}: {error}")
+                            new_row = pd.DataFrame({"File Path": [file_path], "Error": [error]})
+                            
+                            # add row
+                            new_df = pd.concat([new_df, new_row], ignore_index=True)
+                        except Exception as e:
+                            print(e)
+                            print(f"Error with {file_path}")
+                            print(f"Error labels: {labels["Error"].values}")
 
-                        new_row = pd.DataFrame({"File Path": [file_path], "Error": [error]})
-                        
-                        # add row
-                        new_df = pd.concat([new_df, new_row], ignore_index=True)
-                    except Exception as e:
-                        print(e)
-                        print(f"Error with {file_path}")
-                        print(f"Error labels: {labels["Error"].values}")
-    
-    new_df.to_csv(os.path.join(top_dir, "train_labels.csv"), index=False)
+        arm_file = f"{arm.split('/')[-1]}_labels.csv"
+        new_df.to_csv(os.path.join(top_dir, arm_file), index=False)
 
 ###
 def test_get_set_cols_bool(args):
