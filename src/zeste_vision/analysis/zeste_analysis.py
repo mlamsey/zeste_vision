@@ -23,7 +23,19 @@ MEDIAPIPE_OPTIONS = {
     "min_tracking_confidence": 0.5
 }
 
-def estimate_pose_frame(frame, pose_estimator) -> np.ndarray:
+def estimate_pose_frame(frame: np.ndarray, pose_estimator: mp.solutions.pose.Pose) -> tuple:
+    """
+    Estimate the pose of a single frame.
+    Args:
+        frame: np.ndarray
+        pose_estimator: mediapipe.solutions.pose.Pose
+
+    Returns:
+        tuple:
+            - np.ndarray: normalized pose
+            - np.ndarray: world pose
+    """
+
     result = pose_estimator.process(frame)
     return get_pose_np(result.pose_landmarks), get_pose_np(result.pose_world_landmarks)
 
