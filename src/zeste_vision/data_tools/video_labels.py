@@ -3,6 +3,8 @@ import numpy as np
 import os
 import pandas as pd
 import json
+import cv2
+from tqdm import tqdm
 
 from zeste_vision.data_tools.zeste_loader import EXERCISES, USER_RANGES, ARMS
 
@@ -267,6 +269,40 @@ def train_eval_split_labels(parent_labels: str, top_dir: str):
         arm_file = f"{arm.split('/')[-1]}_labels.csv"
         new_df.to_csv(os.path.join(top_dir, arm_file), index=False)
 
+def refine_labels_full_videos_only(original_labels: str, n_frames: int = 30):
+    """
+    Args:
+        original_labels: path to the original labels file
+        n_frames: number of frames to sample from each video
+    """
+    # checks
+    if not os.path.exists(original_labels):
+        print(f"File {original_labels} does not exist.")
+        return
+
+    # load labels
+    df = pd.read_csv(original_labels)
+
+    new_df = pd.DataFrame(columns=["File Path", "Error"])
+
+    for i, row in tqdm(df.iterrows()):
+        file_path = row["File Path"]
+        error = row["Error"]
+
+        video = cv2.VideoCapture(file_path)
+        if not video.isOpened():
+            print(f"Error opening video file: {file_path}")
+            continue
+
+        frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        if frame_count == n_frames:
+            new_row = pd.DataFrame({"File Path": [file_path], "Error": [error]})
+            new_df = pd.concat([new_df, new_row], ignore_index=True)
+
+    new_file = original_labels.replace(".csv", "_full_videos_only.csv")
+    new_df.to_csv(new_file, index=False)
+
 ###
 def test_get_set_cols_bool(args):
     df = load_data(args.file)
@@ -318,6 +354,8 @@ def main(args):
     elif args.labels:
         df = load_data(args.file)
         get_labels(df)
+    elif args.relabel:
+        refine_labels_full_videos_only(args.file)
 
 if __name__ == "__main__":
     import argparse
@@ -325,6 +363,7 @@ if __name__ == "__main__":
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--labels", action="store_true")
     parser.add_argument("--file", type=str)
+    parser.add_argument("--relabel", action="store_true")
 
     args = parser.parse_args()
 
