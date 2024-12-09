@@ -1,5 +1,6 @@
 import cv2
 import os
+import pandas as pd
 from tqdm import tqdm
 
 def split_video(file_path: str, output_file: str, frames_per_video: int):
@@ -101,6 +102,25 @@ def do_split(frames_per_video: int = 30, output_top_dir: str = None):
 
         bulk_split(d, frames_per_video, output_top_dir=output_top_dir_split)
 
+def split_by_exercise(in_file: str):
+    # read csv
+    df = pd.read_csv(in_file)
+    exercises = [
+        "seated_reach_forward_low",
+        "seated_forward_kick",
+        "seated_calf_raise",
+        "standing_reach_across",
+        "standing_high_knee",
+        "standing_windmill",
+    ]
+
+    file_root = in_file.split('.')[0]
+
+    for exercise in exercises:
+        exercise_df = df[df["File Path"].str.contains(exercise)]
+        print(exercise_df.shape)
+        exercise_df.to_csv(f'{file_root}_{exercise}.csv', index=False)
+
 def cleanup(bool_ask: bool = False):
     print('Cleaning up...')
     top_dir = "/nethome/mlamsey3/Documents/data/zeste_studies/form_feedback/videos"
@@ -133,6 +153,8 @@ def main(args):
         do_split(args.frames_per_video, args.output_top_dir)
     elif args.cleanup:
         cleanup()
+    elif args.split_by_exercise:
+        split_by_exercise(args.file)
 
 if __name__ == '__main__':
     import argparse
@@ -143,6 +165,8 @@ if __name__ == '__main__':
     parser.add_argument('--frames_per_video', type=int, default=30)
     parser.add_argument('--output_top_dir', type=str)
     parser.add_argument('--cleanup', action='store_true')
+    parser.add_argument('--split_by_exercise', action='store_true')
+    parser.add_argument('--file', type=str)
 
     args = parser.parse_args()
     main(args)

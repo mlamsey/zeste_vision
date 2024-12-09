@@ -239,9 +239,9 @@ def train_eval_split_labels(parent_labels: str, top_dir: str):
             videos = [v for v in videos if v.endswith(".mp4")]
             videos.sort()
 
-            for exercise in ["seated_reach_forward_low", "seated_forward_kick", "seated_calf_raises", "standing_reach_across", "standing_windmills", "standing_high_knees"]:
+            for exercise in ["seated_reach_forward_low", "seated_forward_kick", "seated_calf_raise", "standing_reach_across", "standing_windmills", "standing_high_knees"]:
                 exercise_videos = [v for v in videos if exercise in v]
-                labels = df[(df["Participant ID"] == p.upper()) & (df["Exercise"] == exercise)]
+                labels = df[(df["Participant ID"] == p.upper()) & (df["Exercise"].str.contains(exercise))]
 
                 headers = [v[:video_header_len] for v in exercise_videos]
                 unique_headers = list(set(headers))
@@ -342,7 +342,7 @@ def test_visualize_proportions_of_yes_no(args):
 def test_train_eval_split_labels(args):
     parent_labels = "labels_parent.csv"
     top_dir = "/nethome/mlamsey3/Documents/data/zeste_studies/form_feedback/split_videos"
-    train_eval_split_labels(parent_labels, top_dir)
+    train_eval_split_labels(os.path.join(top_dir, '..', parent_labels), top_dir)
 
 def main(args):
     if args.test:

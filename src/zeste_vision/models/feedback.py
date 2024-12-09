@@ -1,10 +1,11 @@
 import os
+import pandas as pd
 import torch
 
 from zeste_vision.data_tools.dataloader import PoseDateset
 
 class FeedbackModel(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, cuda=True):
         super(FeedbackModel, self).__init__()
 
         # architecture
@@ -37,6 +38,10 @@ class FeedbackModel(torch.nn.Module):
         self.relu = torch.functional.F.relu
         self.sigmoid = torch.functional.F.sigmoid
 
+        # to cuda
+        if cuda:
+            self.to("cuda")
+
     def forward(self, x):
         for conv, pool in zip(self.conv_layers, self.pool_layers):
             x = self.relu(conv(x))
@@ -53,22 +58,38 @@ class FeedbackModel(torch.nn.Module):
 def test_model_forward():
     # dataset
     data_dir = "/nethome/mlamsey3/Documents/data/zeste_studies/form_feedback/split_poses/train"
-    csv_file = os.path.join(data_dir, "train_labels.csv")
-    dataset = PoseDateset(csv_file)
+    csv_file = os.path.join(data_dir, "train_labels_full_videos_only.csv")
+    df = pd.read_csv(csv_file)
+    dataset = PoseDateset(df)
+    total_dataset_size = len(dataset)
+    print(f"Total dataset size: {total_dataset_size}")
 
     input_data = dataset[123][0]
     input_data = input_data.unsqueeze(0)
     
     model = FeedbackModel()
     try:
+        print(f"Input size: {input_data.size()}")
         output = model(input_data)
+        print(f"Output size: {output.size()}")
         print(output)
     except Exception as e:
         print(f"Error running model forward: {e}")
         return
     
+def print_model_param_size():
+    model = FeedbackModel()
+    params = model.parameters()
+    total_size = 0
+    for param in params:
+        print(param.size())
+        total_size += param.numel()
+
+    print(f"Total number of parameters: {total_size}")
+
 def main(args):
     if args.test:
+        print_model_param_size()
         test_model_forward()
 
 if __name__ == "__main__":

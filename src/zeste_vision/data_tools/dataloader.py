@@ -38,7 +38,8 @@ class PoseDateset(Dataset):
         poses = torch.transpose(poses, 0, 2)
 
         label = row["Error"]
-        label = 1. if label == "Error" else 0.
+        # print(f"Label: {label}")
+        label = 1. if label else 0.
         label = torch.tensor(label)
 
         # to device
