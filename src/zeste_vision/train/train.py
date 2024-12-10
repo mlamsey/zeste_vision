@@ -37,15 +37,17 @@ def train_pose_model():
 
     trainer.train(num_epochs=100)
 
-def train_models_per_exercise(n_epochs=100):
+def train_models_per_exercise(form_feedback_folder: str, n_epochs=100):
     exercise_map = {
-        "SRFL": "/nethome/mlamsey3/Documents/data/zeste_studies/form_feedback/split_poses/train/train_labels_full_videos_only_seated_reach_forward_low.csv",
-        "SFK": "/nethome/mlamsey3/Documents/data/zeste_studies/form_feedback/split_poses/train/train_labels_full_videos_only_seated_forward_kick.csv",
-        "SCR": "/nethome/mlamsey3/Documents/data/zeste_studies/form_feedback/split_poses/train/train_labels_full_videos_only_seated_calf_raise.csv",
-        "RA": "/nethome/mlamsey3/Documents/data/zeste_studies/form_feedback/split_poses/train/train_labels_full_videos_only_standing_reach_across.csv",
-        "W": "/nethome/mlamsey3/Documents/data/zeste_studies/form_feedback/split_poses/train/train_labels_full_videos_only_standing_windmill.csv",
-        "HK": "/nethome/mlamsey3/Documents/data/zeste_studies/form_feedback/split_poses/train/train_labels_full_videos_only_standing_high_knee.csv",
+        "SRFL": "/split_poses/train/train_labels_full_videos_only_seated_reach_forward_low.csv",
+        "SFK": "/split_poses/train/train_labels_full_videos_only_seated_forward_kick.csv",
+        "SCR": "/split_poses/train/train_labels_full_videos_only_seated_calf_raise.csv",
+        "RA": "/split_poses/train/train_labels_full_videos_only_standing_reach_across.csv",
+        "W": "/split_poses/train/train_labels_full_videos_only_standing_windmill.csv",
+        "HK": "/split_poses/train/train_labels_full_videos_only_standing_high_knee.csv",
     }
+
+    exercise_map = {k: os.path.join(form_feedback_folder, v) for k, v in exercise_map.items()}
 
     for shorthand_name, file_path in exercise_map.items():
         print(f"Training model for {shorthand_name}")

@@ -1,6 +1,9 @@
 src/zeste_vision.egg-info/
 __pycache__/
 
+src/zeste_vision/train/runs/
+src/zeste_vision/analysis/old_jsons/
+
 *.zip
 *.pkl
 *.mp4
